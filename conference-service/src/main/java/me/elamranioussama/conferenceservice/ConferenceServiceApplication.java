@@ -24,9 +24,6 @@ public class ConferenceServiceApplication {
     public CommandLineRunner loadInitialData(ConferenceRepository conferenceRepository,
                                              ReviewRepository reviewRepository) {
         return args -> {
-            // clean for idempotence during development
-            reviewRepository.deleteAll();
-            conferenceRepository.deleteAll();
 
             // Conference 1
             Conference c1 = new Conference();

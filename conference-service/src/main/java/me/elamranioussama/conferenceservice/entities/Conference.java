@@ -24,7 +24,7 @@ public class Conference {
     private Integer numberOfRegistrants;
     private Double score;
 
-    @OneToMany(mappedBy = "conference")
+    @OneToMany(mappedBy = "conference", fetch = FetchType.EAGER)
     private List<Review> reviews;
     private Long keynoteId;
     @Transient
