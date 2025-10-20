@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: keynote-service
+
+  cloud:
+    config:
+      enabled: true
+
+  config:
+    import: optional:configserver:http://localhost:9999
