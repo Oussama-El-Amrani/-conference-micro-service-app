@@ -1,0 +1,73 @@
+services:
+  discovery-service:
+    image: discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - conference-network
+
+  config-service:
+    image: config-service
+    ports:
+      - "9999:9999"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Deureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - conference-network
+
+  gateway-service:
+    image: gateway-service
+    ports:
+      - "8888:8888"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Deureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:9999
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - conference-network
+
+  conference-service:
+    image: conference-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:9999
+      - JAVA_TOOL_OPTIONS=-Deureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - conference-network
+
+  keynote-service:
+    image: keynote-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:9999
+      - JAVA_TOOL_OPTIONS=-Deureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/ -Dspring.data.rest.base-path=/api
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - conference-network
+
+networks:
+  conference-network:
+    driver: bridge
